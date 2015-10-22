@@ -129,9 +129,9 @@ def game_intro():
 	print click
 	call_on_click(click)
 
-def Play():
-    cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
+def Play():
     click = "True"
     
     while click == "True":
@@ -155,7 +155,7 @@ def Play():
 
         if click=="start":
         	click = "True"
-        	count = async_result = pool.apply_async(fingerCount, (cap,1, ))
+        	count = pool.apply_async(fingerCount, (cap,1, ))
         	print count.get()
 
         pygame.display.update()
