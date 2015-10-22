@@ -2,7 +2,7 @@ import pygame,time,random,cv2
 from detectionFunction import fingerCount
 from multiprocessing.pool import ThreadPool
 
-#threading
+#threading and opencv
 pool = ThreadPool(processes=1)
 
 pygame.init()
@@ -57,36 +57,35 @@ def textButton(msg,color,x,y,width,height,size="small"):
 	textRect.center = ((x+width/2),y+height/2)
 	gameDisplay.blit(textSurf,textRect)
 
-def button(text,x,y,width,height,inactive_color,active_color,action=None):
-	flag = 1
+def button(text,x,y,width,height,inactive_color,active_color,action,flag):
+
 	cur = pygame.mouse.get_pos()
 	click = pygame.mouse.get_pressed()
 	
 	if x+width > cur[0] > x and y+height> cur[1] > y:
 		pygame.draw.rect(gameDisplay,active_color,(x,y,width,height))
-
 		if click[0] and action != None:
-			if action == "play":
-				flag = 0
-				Play()
-			elif action == "instructions":
-				flag = 0
-				Instructions()
-			elif action == "about":
-				flag = 0
-				About()
-			elif action == "quit":
-				flag = 0
-				pygame.quit()
-				quit()
-			elif action == "game_intro":
-				flag = 0
-				game_intro()
+			flag = action
+
 	else:
 		pygame.draw.rect(gameDisplay,inactive_color,(x,y,width,height))
 
 	textButton(text,black,x,y,width,height)
+
 	return flag
+
+def call_on_click(action):
+	if action == "play":
+		Play()
+	elif action == "instructions":
+		Instructions()
+	elif action == "about":
+		About()
+	elif action == "quit":
+		pygame.quit()
+		quit()
+	elif action == "game_intro":
+		game_intro()	
 
 def message_to_screen(msg,color, y_displace = 0, size = "small"):
     textSurf, textRect = text_objects(msg,color,size)
@@ -100,40 +99,43 @@ def splash_screen():
 	clock.tick(15)
 
 def game_intro():
-	intro = True
-	flag = 1
-	while flag and intro:
+	click = "True"
+
+	while click == "True":
+
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				quit()
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_c:
-					intro = False
+					intro = 0
 				elif event.key == pygame.K_q:
 					pygame.quit()
 					quit()
 
 		gameDisplay.blit(whitebg,(0,0))
-		# gameDisplay.blit(paperImage,(0,0))
+
 		message_to_screen("The classical game of -",black,-125,size="large")
 		message_to_screen("ROCK PAPER SCISSORS!",black,-40,size="large")
 
-		intro = button("Play",display_width*0.15,display_height*0.75,100,50,green,light_green,"play")
-		intro = button("Instructions",display_width*0.35+5,display_height*0.75,120,50,red,light_red,"instructions")
-		intro = button("About",display_width*0.55,display_height*0.75,120,50,blue,light_blue,"about")
-		intro = button("Quit",display_width*0.75,display_height*0.75,100,50,yellow,light_yellow,"quit")
+		click = button("Play",display_width*0.15,display_height*0.75,100,50,green,light_green,"play",click)
+		click = button("Instructions",display_width*0.35+5,display_height*0.75,120,50,red,light_red,"instructions",click)
+		click = button("About",display_width*0.55,display_height*0.75,120,50,blue,light_blue,"about",click)
+		click = button("Quit",display_width*0.75,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
 
 		pygame.display.update()
+
+	print click
+	call_on_click(click)
 
 def Play():
     cap = cv2.VideoCapture(0)
 
-    intro = True
-    k = -1
-    while intro:
+    click = "True"
+    
+    while click == "True":
         for event in pygame.event.get():
-                #print(event)
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
@@ -144,38 +146,35 @@ def Play():
                         Play()
                     elif event.key == pygame.K_q:
                         pygame.quit()
-                        quit()
-                    elif event.key == pygame.K_t:
-                    	print "fingerCount"
-                        k = fingerCount(cap,2)
-                        print k
-                        # pygame.time.wait(3)
-                elif event.type == pygame.KEYUP:
-                	if event.key == pygame.K_t:
-                		cap.release()
-                        
+                        quit()              
 
         gameDisplay.fill(white)
 
-        button("play,%d"%(k), 150,500,100,50, green, light_green, action="None")
-        button("Main", 250,500,100,50, green, light_green, action="game_intro")
+        click = button("Main", 350,500,100,50, green, light_green, "game_intro",click)
+        click = button("START", 550,500,100,50, green, light_green, "start",click)
+
+        if click=="start":
+        	click = "True"
+        	count = async_result = pool.apply_async(fingerCount, (cap,1, ))
+        	print count.get()
 
         pygame.display.update()
 
         clock.tick(15)
 
+    call_on_click(click)
 
 def Instructions():
-	Intruc = True
+	click = "True"
 	
-	while Intruc:
+	while click == "True":
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				quit()
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_c:
-					Intruc = False
+					Intruc = "False"
 				elif event.key == pygame.K_q:
 					pygame.quit()
 					quit()
@@ -187,14 +186,15 @@ def Instructions():
 		message_to_screen("Scissor cut paper",black,-90,size="large")
 		message_to_screen("Paper subdue rock",black,-180,size="large")
 
-		button("Main",display_width*0.2,display_height*0.75,100,50,yellow,light_yellow,"game_intro")
-		button("Quit",display_width*0.45,display_height*0.75,100,50,yellow,light_yellow,"quit")
+		click = button("Main",display_width*0.2,display_height*0.75,100,50,yellow,light_yellow,"game_intro")
+		click = button("Quit",display_width*0.45,display_height*0.75,100,50,yellow,light_yellow,"quit")
 
 		pygame.display.update()
+
+	call_on_click(click)
 
 def About():
 	pass
 
 # splash_screen()
-# print fingerCount(2)
 game_intro()

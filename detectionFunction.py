@@ -86,3 +86,4 @@ def fingerCount(cap,openSecs):
 
 # print fingerCount(5,2)
 # pygame.time.wait(5000)
+#chcek
