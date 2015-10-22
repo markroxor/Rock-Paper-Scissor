@@ -1,13 +1,14 @@
 import cv2,pygame
+from detectionFunction import fingerCount
 
 capture = cv2.VideoCapture(0)   
 
-ret,img = capture.read()
+k = fingerCount(capture,2)
+print k
 
-print ret
-capture.release()
-ret,img = capture.read()
-capture.release()
-del capture
-print ret
-pygame.time.wait(5000)                 # release it
+pygame.time.wait(3000)   
+
+k = fingerCount(capture,2)
+print k
+
+pygame.time.wait(3000)

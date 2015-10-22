@@ -4,10 +4,10 @@ from collections import Counter
 
 clk = pygame.time.Clock()
 
-def fingerCount(openSecs):
+def fingerCount(cap,openSecs):
     dfcts = []
 
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(0)
 
     ori = time.time()
     clk = time.time()
@@ -77,13 +77,12 @@ def fingerCount(openSecs):
 
     data = Counter(dfcts)
     # print dfcts
-    print "trying to release"
-    cap.release()
-    # del(cap)
-    print "released..."
-    # print ke
+    # print "trying to release"
+    # cap.release()
+    # # del(cap)
+    # print "released..."
+
     return data.most_common(1)[0][0]
 
-print fingerCount(2)
-# thread.start_new_thread( fingerCount, (2, ) )
-pygame.time.wait(5000)
+# print fingerCount(5,2)
+# pygame.time.wait(5000)

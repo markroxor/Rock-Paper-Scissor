@@ -1,7 +1,12 @@
-import pygame,time,random,cv2,thread,threading
+import pygame,time,random,cv2
 from detectionFunction import fingerCount
+from multiprocessing.pool import ThreadPool
+
+#threading
+pool = ThreadPool(processes=1)
 
 pygame.init()
+
 display_width = 1366
 display_height = 700
 
@@ -74,6 +79,9 @@ def button(text,x,y,width,height,inactive_color,active_color,action=None):
 				flag = 0
 				pygame.quit()
 				quit()
+			elif action == "game_intro":
+				flag = 0
+				game_intro()
 	else:
 		pygame.draw.rect(gameDisplay,inactive_color,(x,y,width,height))
 
@@ -119,6 +127,8 @@ def game_intro():
 		pygame.display.update()
 
 def Play():
+    cap = cv2.VideoCapture(0)
+
     intro = True
     k = -1
     while intro:
@@ -137,8 +147,7 @@ def Play():
                         quit()
                     elif event.key == pygame.K_t:
                     	print "fingerCount"
-                        k,cap = fingerCount(2)
-                        cap.release()
+                        k = fingerCount(cap,2)
                         print k
                         # pygame.time.wait(3)
                 elif event.type == pygame.KEYUP:
@@ -149,6 +158,7 @@ def Play():
         gameDisplay.fill(white)
 
         button("play,%d"%(k), 150,500,100,50, green, light_green, action="None")
+        button("Main", 250,500,100,50, green, light_green, action="game_intro")
 
         pygame.display.update()
 
@@ -157,39 +167,30 @@ def Play():
 
 def Instructions():
 	Intruc = True
-	# k,cap = fingerCount(2)
-	print "thread starting..."
 	
-	try:
-	   # global k
-	   thread.start_new_thread( fingerCount, (2, ) )
-	except:
-	   print "Error: unable to start thread"
+	while Intruc:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				quit()
+			elif event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_c:
+					Intruc = False
+				elif event.key == pygame.K_q:
+					pygame.quit()
+					quit()
 
-	print "thread running, I'm out..."
-	print "in instructions"
-	# while Intruc:
-	# 	for event in pygame.event.get():
-	# 		if event.type == pygame.QUIT:
-	# 			pygame.quit()
-	# 			quit()
-	# 		elif event.type == pygame.KEYDOWN:
-	# 			if event.key == pygame.K_c:
-	# 				Intruc = False
-	# 			elif event.key == pygame.K_q:
-	# 				pygame.quit()
-	# 				quit()
+		gameDisplay.blit(whitebg,(0,0))
+		# gameDisplay.blit(paperImage,(0,0))
+		message_to_screen("The winner is decided by the show of hands.",black,-250,size="medium")
+		message_to_screen("Rock beats scissors",black,0,size="large")
+		message_to_screen("Scissor cut paper",black,-90,size="large")
+		message_to_screen("Paper subdue rock",black,-180,size="large")
 
-	# 	gameDisplay.blit(whitebg,(0,0))
-	# 	# gameDisplay.blit(paperImage,(0,0))
-	# 	message_to_screen("The winner is decided by the show of hands.",black,-250,size="medium")
-	# 	message_to_screen("Rock beats scissors",black,0,size="large")
-	# 	message_to_screen("Scissor cut paper",black,-90,size="large")
-	# 	message_to_screen("Paper subdue rock",black,-180,size="large")
+		button("Main",display_width*0.2,display_height*0.75,100,50,yellow,light_yellow,"game_intro")
+		button("Quit",display_width*0.45,display_height*0.75,100,50,yellow,light_yellow,"quit")
 
-	# 	button("Quit",display_width*0.45,display_height*0.75,100,50,yellow,light_yellow,"quit")
-
-	# 	pygame.display.update()
+		pygame.display.update()
 
 def About():
 	pass
