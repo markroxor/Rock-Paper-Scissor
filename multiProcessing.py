@@ -1,4 +1,4 @@
-from detectionFunction import fingerCount
+from detectionFunction import fingerCount1
 import thread,threading,time,cv2
 
 from multiprocessing.pool import ThreadPool
@@ -6,7 +6,7 @@ pool = ThreadPool(processes=1)
 
 cap = cv2.VideoCapture(0)
 # cap = 1
-async_result = pool.apply_async(fingerCount, (cap,1, )) # tuple of args for foo
+async_result = pool.apply_async(fingerCount1, (cap,1, )) # tuple of args for foo
 
 # do some other stuff in the main process
 
@@ -22,6 +22,7 @@ while clk-ori<10.0:
 
 	if clk-ptime>1:
 		ptime = clk
-		async_result = pool.apply_async(fingerCount, (cap,1, ))
+		# async_result = pool.apply_async(fingerCount1, (cap,2, ))
+		print fingerCount1(cap,2)
 		print async_result.get()
  

@@ -33,8 +33,8 @@ def fingerCount(cap,openSecs):
                 cy = int(moments['m01']/moments['m00']) # cy = M01/M00
               
     centr=(cx,cy)       
-    cv2.circle(img,centr,5,[0,0,255],2)       
-    cv2.drawContours(drawing,[cnt],0,(0,255,0),2) 
+    cv2.circle(img,centr,5,[0,0,255],2)
+    cv2.drawContours(drawing,[cnt],0,(0,255,0),2)
     cv2.drawContours(drawing,[hull],0,(0,0,255),2) 
           
     cnt = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
@@ -121,7 +121,7 @@ def fingerCount1(cap,openSecs):
             
             cv2.circle(img,far,5,[0,0,255],-1)
 
-        print "fingers = %d"%(i)
+        # print "fingers = %d"%(i)
 
         dfcts.append(i)
         i=0
