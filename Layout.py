@@ -11,6 +11,8 @@ cap = cv2.VideoCapture(0)
 #Pygame Initialisation and Macros
 sampleTime = 3.0
 stScore = 5
+imageWidth = 400
+imageHeight = 300 
 
 pygame.init()
 
@@ -44,10 +46,11 @@ pygame.display.set_caption("Rock Paper Scissor")
 
 #Images
 backImage = pygame.image.load("img1.png")
+whitebg = pygame.image.load("white-background.png")
+
 paperImage = pygame.image.load("paper.png")
 fistImage = pygame.image.load("fist.png")
 scissorImage = pygame.image.load("scissor.png")
-whitebg = pygame.image.load("white-background.png")
 
 #Fonts
 smallfont = pygame.font.SysFont("comicsansms",25)
@@ -58,6 +61,7 @@ largefont = pygame.font.SysFont("comicsansms",85)
 #Clock
 clock = pygame.time.Clock()
 #
+num2show = ['rock', 'paper','scissor']
 
 #Main Defs
 def text_objects(text,color,size="small"):
@@ -106,9 +110,9 @@ def call_on_click(action):
 	elif action == "game_intro":
 		game_intro()	
 
-def message_to_screen(msg,color, y_displace = 0, size = "small",x_diplace=int(display_width / 2)):
+def message_to_screen(msg,color, y_displace = 0, size = "small",x_displace=0):
     textSurf, textRect = text_objects(msg,color,size)
-    textRect.center = (x_diplace, int(display_height / 2)+y_displace)
+    textRect.center = (int(display_width / 2)+x_displace, int(display_height / 2)+y_displace)
     gameDisplay.blit(textSurf, textRect)
 
 def scoreIncrement(playerShow,cpuShow):
@@ -129,22 +133,26 @@ def scores(playerScore,cpuScore):
 	message_to_screen("Player Score: %d"%(playerScore),black,-250,"medium",140)
 	message_to_screen("CPU Score: %d"%(cpuScore),black,-250,"medium",display_width - 140)
 
-def genRandHand(randm = random.randint(0,2)):
+def genRandHand(cpuShow = random.randint(0,2),xOffset=0,yOffset=0):
 
-	if randm == 0:
-		gameDisplay.blit(fistImage,(display_width/2,display_height/2))
-	elif randm == 1:
-		gameDisplay.blit(paperImage,(display_width/2,display_height/2))
-	elif randm == 2:
-		gameDisplay.blit(scissorImage,(display_width/2,display_height/2))
+	if cpuShow == 0:
+		gameDisplay.blit(fistImage,(display_width/2-fistImage.get_size()[0]+xOffset,display_height/2+yOffset))
+	elif cpuShow == 1:
+		gameDisplay.blit(paperImage,(display_width/2-paperImage.get_size()[0]+xOffset,display_height/2+yOffset))
+	elif cpuShow == 2:
+		gameDisplay.blit(scissorImage,(display_width/2-scissorImage.get_size()[0]+xOffset,display_height/2+yOffset))
 
-	return randm
+	return cpuShow
+
+def pause_screen():
+	message_to_screen("Game Paused",black,0,"Large")
+
 
 def splash_screen():
 	gameDisplay.blit(backImage,(0,-35))
 	pygame.display.update()
 	pygame.time.wait(1500)
-	clock.tick(15)
+	clock.tick(5)
 
 def game_intro():
 
@@ -174,6 +182,7 @@ def game_intro():
 		click = button("Quit",display_width*0.75,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
 
 		pygame.display.update()
+		clock.tick(60)
 
 	call_on_click(click)
 
@@ -182,21 +191,23 @@ def Play():
 
 	curClock = time.time()
 	startClock = 0
-	defects = []
+	shows = []
 	verdict  = 0
 
-	cpuScore = stScore
-	playerScore = stScore
+	score = stScore
 	showTime = 0
 
 	while click == "True":
+		#To avoid registration of multiple clicks
+		pygame.time.wait(10)
 		curClock = time.time()
 
 		try:
-			fcount = fingerCount (cap,5)
+			fingCount = fingerCount (cap,5)
 		except:
 			print "No Shape"
 
+			
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
@@ -212,10 +223,8 @@ def Play():
 
 		gameDisplay.fill(white)
 
-		# scores(playerScore,cpuScore)
-
-		click = button("Main", 350,500,100,50, green, light_green, "game_intro",click)
-		click = button("START", 550,500,100,50, green, light_green, "start",click)
+		click = button("Main Menu", 350,500,100,50, green, light_green, "game_intro",click)
+		click = button("Start", 900,500,100,50, green, light_green, "start",click)
 
 
 		if click=="start":
@@ -227,47 +236,59 @@ def Play():
 			print "Scissors."
 			pool.apply_async(callRPS, ("Scissor",)) #multiprocessing works wonders
 			startClock = time.time()
-			defects = []
+			shows = []
 			verdict  = 1 
 			showTime = 0
 			# count = pool.apply_async(fingerCount, (cap,5, ))
 			# print count.get()
 
 		if curClock-startClock<sampleTime:
-			message_to_screen("Show hands for %d secs"%(int(sampleTime)-int(curClock-startClock)),black,-180,size="large")
-
-			genRandHand(randm = random.randint(1,3))
-			defects.append(fcount)
+			# message_to_screen("Show hands for %d secs"%(int(sampleTime)-int(curClock-startClock)),black,-180,size="large")
+			genRandHand(cpuShow = random.randint(1,3))
+			shows.append(fingCount)
 
 		elif verdict: 
 			showTime = 1
 			verdict = 0
-			data = Counter(defects)
-			randm = random.randint(0,2)
+			counteredShows = Counter(shows)
+			cpuShow = random.randint(0,2)
 			plShow = -1
 
-			if data.most_common(1)[0][0]==4 or data.most_common(1)[0][0]==5:
+			if counteredShows.most_common(1)[0][0]==4 or counteredShows.most_common(1)[0][0]==5:
 				plShow = 1
 				print "paper"
-			elif data.most_common(1)[0][0]==3 or data.most_common(1)[0][0]==1:
+			elif counteredShows.most_common(1)[0][0]==3 or counteredShows.most_common(1)[0][0]==1:
 				plShow = 0
 				print "fist"
-			elif data.most_common(1)[0][0]==2:# or data.most_common(1)[0][0]==2:
+			elif counteredShows.most_common(1)[0][0]==2:# or counteredShows.most_common(1)[0][0]==2:
 				plShow = 2
 				print "scissor"
 			else:
 				print "INVALID MOVE!"
 
-			print data.most_common(1)[0][0],randm
-			print scoreIncrement(plShow,randm)
+			print counteredShows.most_common(1)[0][0],cpuShow
+			print scoreIncrement(plShow,cpuShow)
+			score += scoreIncrement(plShow,cpuShow)
 
 		if showTime:
-			genRandHand(randm)
+			genRandHand(cpuShow,-250)
+			genRandHand(plShow,250)
 
+ 
+
+		outputImage = pygame.image.load("output.png")
+		inputImage = pygame.image.load("input.png")
+		
+		inputImage = pygame.transform.scale(inputImage, (imageWidth,imageHeight))
+		outputImage = pygame.transform.scale(outputImage, (imageWidth,imageHeight))
+
+		gameDisplay.blit(inputImage,(0,0))
+		gameDisplay.blit(outputImage,(display_width-imageWidth,0))
+
+		message_to_screen("Score: %d"%(score),black,200,size="medium")
 
 		pygame.display.update()
-
-		clock.tick(15)
+		clock.tick(60)
 
 	call_on_click(click)
 
@@ -276,6 +297,9 @@ def Instructions():
 	click = "True"
 	
 	while click == "True":
+
+		#To avoid registration of multiple clicks
+		# pygame.time.wait(10)
 
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -290,15 +314,17 @@ def Instructions():
 
 		gameDisplay.blit(whitebg,(0,0))
 
-		message_to_screen("The winner is decided by the show of hands.",black,-250,size="medium")
-		message_to_screen("Rock beats scissors",black,0,size="large")
-		message_to_screen("Scissor cut paper",black,-90,size="large")
-		message_to_screen("Paper subdue rock",black,-180,size="large")
+		message_to_screen("The winner is decided by the show of hands.",black,-160,size="medium")
+		message_to_screen("Rock beats scissors",black,80,size="large")
+		message_to_screen("Scissor cut paper",black,0,size="large")
+		message_to_screen("Paper subdue rock",black,-80,size="large")
 
-		click = button("Main",display_width*0.3,display_height*0.75,100,50,yellow,light_yellow,"game_intro",click)
-		click = button("Quit",display_width*0.6,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
+		click = button("Main",display_width*0.2,display_height*0.75,100,50,yellow,light_yellow,"game_intro",click)
+		click = button("Quit",display_width*0.7,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
 
 		pygame.display.update()
+		clock.tick(60)
+
 
 	call_on_click(click)
 
@@ -323,10 +349,11 @@ def Credits():
 		message_to_screen("Ranjan Purbey in Java using Javafx,",black,-90,size="medium")
 		message_to_screen("and then further extended to Python using pygame.",black,0,size="medium")
 		
-		click = button("Main Menu",display_width*0.3,display_height*0.75,100,50,yellow,light_yellow,"game_intro",click)
-		click = button("Quit",display_width*0.6,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
+		click = button("Main Menu",display_width*0.2,display_height*0.75,100,50,yellow,light_yellow,"game_intro",click)
+		click = button("Quit",display_width*0.7,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
 
 		pygame.display.update()
+		clock.tick(60)
 
 	call_on_click(click)
 

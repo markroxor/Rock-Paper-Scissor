@@ -13,7 +13,7 @@ def fingerCount(cap,openSecs):
     ret,thresh1 = cv2.threshold(blur,130,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
   
     i,contours, hierarchy = cv2.findContours(thresh1,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    drawing = np.zeros(img.shape,np.uint8)
+    output = np.zeros(img.shape,np.uint8)
 
     max_area=0
    
@@ -34,8 +34,8 @@ def fingerCount(cap,openSecs):
               
     centr=(cx,cy)       
     cv2.circle(img,centr,5,[0,0,255],2)
-    cv2.drawContours(drawing,[cnt],0,(0,255,0),2)
-    cv2.drawContours(drawing,[hull],0,(0,0,255),2) 
+    cv2.drawContours(output,[cnt],0,(0,255,0),2)
+    cv2.drawContours(output,[hull],0,(0,0,255),2) 
           
     cnt = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
     hull = cv2.convexHull(cnt,returnPoints = False)
@@ -56,12 +56,14 @@ def fingerCount(cap,openSecs):
 
     # i=0
     
-    cv2.imshow('output',drawing)
-    cv2.imshow('input',img)
+    # cv2.imshow('output',output)
+    # cv2.imshow('input',img)
                 
     k = cv2.waitKey(10)
     # if k == 27:
     #     break
+    cv2.imwrite("output.png",output)
+    cv2.imwrite("input.png",img)
 
     return i
 
@@ -82,7 +84,7 @@ def fingerCount1(cap,openSecs):
         ret,thresh1 = cv2.threshold(blur,130,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
       
         i,contours, hierarchy = cv2.findContours(thresh1,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        drawing = np.zeros(img.shape,np.uint8)
+        output = np.zeros(img.shape,np.uint8)
 
         max_area=0
        
@@ -103,8 +105,8 @@ def fingerCount1(cap,openSecs):
                   
         centr=(cx,cy)       
         cv2.circle(img,centr,5,[0,0,255],2)       
-        cv2.drawContours(drawing,[cnt],0,(0,255,0),2) 
-        cv2.drawContours(drawing,[hull],0,(0,0,255),2) 
+        cv2.drawContours(output,[cnt],0,(0,255,0),2) 
+        cv2.drawContours(output,[hull],0,(0,0,255),2) 
               
         cnt = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
         hull = cv2.convexHull(cnt,returnPoints = False)
@@ -126,7 +128,7 @@ def fingerCount1(cap,openSecs):
         dfcts.append(i)
         i=0
         
-        # cv2.imshow('output',drawing)
+        # cv2.imshow('output',output)
         # cv2.imshow('input',img)
                     
         k = cv2.waitKey(10)
