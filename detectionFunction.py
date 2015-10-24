@@ -4,10 +4,9 @@ from collections import Counter
 
 clk = pygame.time.Clock()
 
-def fingerCount(cap,openSecs):
+def fingerCount(openSecs):
 
-    ret,img = cap.read()
-    # img = imread("input.png")
+    img = cv2.imread("input.png")
 
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray,(5,5),0)
@@ -64,7 +63,7 @@ def fingerCount(cap,openSecs):
     # if k == 27:
     #     break
     cv2.imwrite("output.png",output)
-    cv2.imwrite("input.png",img)
+    # cv2.imwrite("input.png",img)
 
     return i
 
