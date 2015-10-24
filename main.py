@@ -157,10 +157,10 @@ def pause_screen():
 	message_to_screen("Game Paused",black,0,"Large")
 
 
-def splash_screen():
+def splash_screen(time):
 	gameDisplay.blit(backImage,(0,-35))
 	pygame.display.update()
-	pygame.time.wait(1500)
+	pygame.time.wait(time)
 	clock.tick(5)
 
 def game_intro():
@@ -293,6 +293,10 @@ def Play():
 			# cap.stop()
 			genRandHand(cpuShow,-220)
 			genRandHand(plShow,280)
+			called.append("Your Show")
+			message_to_screen("Your Show",black,x_displace=250,y_displace=100,size="small",called=called)
+			called.append("CPU Show")
+			message_to_screen("CPU Show",black,x_displace=-250,y_displace=100,size="small",called=called)
 
  
 		if debug:
@@ -380,5 +384,5 @@ def Credits():
 
 	call_on_click(click)
 
-splash_screen()
+splash_screen(1500)
 game_intro()
