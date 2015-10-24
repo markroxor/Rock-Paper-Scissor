@@ -80,7 +80,7 @@ def textButton(msg,color,x,y,width,height,size="small"):
 	textRect.center = ((x+width/2),y+height/2)
 	gameDisplay.blit(textSurf,textRect)
 
-def button(text,x,y,width,height,inactive_color,active_color,action,flag):
+def button(text,x,y,width,height,inactive_color,active_color,action,flag,toggle=1):
 
 	cur = pygame.mouse.get_pos()
 	click = pygame.mouse.get_pressed()
@@ -89,13 +89,14 @@ def button(text,x,y,width,height,inactive_color,active_color,action,flag):
 		pygame.draw.rect(gameDisplay,active_color,(x,y,width,height))
 		if click[0] and action != None:
 			flag = action
+			toggle = not toggle
 
 	else:
 		pygame.draw.rect(gameDisplay,inactive_color,(x,y,width,height))
 
 	textButton(text,black,x,y,width,height)
 
-	return flag
+	return flag,toggle
 
 def call_on_click(action):
 	if action == "play":
@@ -110,10 +111,15 @@ def call_on_click(action):
 	elif action == "game_intro":
 		game_intro()	
 
-def message_to_screen(msg,color, y_displace = 0, size = "small",x_displace=0):
+def message_to_screen(msg,color, y_displace = 0, size = "small",x_displace=0,called=[]):
     textSurf, textRect = text_objects(msg,color,size)
     textRect.center = (int(display_width / 2)+x_displace, int(display_height / 2)+y_displace)
     gameDisplay.blit(textSurf, textRect)
+    if msg in called:
+    	pass
+    else:
+	    pool.apply_async(callRPS, (msg,))
+	    called.append(msg)
 
 def scoreIncrement(playerShow,cpuShow):
 
@@ -156,6 +162,7 @@ def splash_screen():
 
 def game_intro():
 
+	called = []
 	click = "True"
 
 	while click == "True":
@@ -173,13 +180,13 @@ def game_intro():
 
 		gameDisplay.blit(whitebg,(0,0))
 
-		message_to_screen("The classical game of -",black,-125,size="large")
-		message_to_screen("ROCK PAPER SCISSORS!",black,-40,size="large")
+		message_to_screen("The classical game of -",black,-125,size="large",called=called)
+		message_to_screen("ROCK PAPER SCISSORS!",black,-40,size="large",called=called)
 
-		click = button("Play",display_width*0.15,display_height*0.75,100,50,green,light_green,"play",click)
-		click = button("Instructions",display_width*0.35+5,display_height*0.75,120,50,red,light_red,"instructions",click)
-		click = button("Credits",display_width*0.55,display_height*0.75,120,50,blue,light_blue,"credits",click)
-		click = button("Quit",display_width*0.75,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
+		click,_ = button("Play",display_width*0.15,display_height*0.75,100,50,green,light_green,"play",click)
+		click,_ = button("Instructions",display_width*0.35+5,display_height*0.75,120,50,red,light_red,"instructions",click)
+		click,_ = button("Credits",display_width*0.55,display_height*0.75,120,50,blue,light_blue,"credits",click)
+		click,_ = button("Quit",display_width*0.75,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
 
 		pygame.display.update()
 		clock.tick(60)
@@ -197,9 +204,10 @@ def Play():
 	score = stScore
 	showTime = 0
 
+	debug = 0
 	while click == "True":
 		#To avoid registration of multiple clicks
-		pygame.time.wait(10)
+		pygame.time.wait(30)
 		curClock = time.time()
 
 		try:
@@ -223,8 +231,9 @@ def Play():
 
 		gameDisplay.fill(white)
 
-		click = button("Main Menu", 350,500,100,50, green, light_green, "game_intro",click)
-		click = button("Start", 900,500,100,50, green, light_green, "start",click)
+		click,_ = button("Main Menu", display_width/4,(display_height*7)/8,100,50, green, light_green, "game_intro",click)
+		click,_ = button("Start", display_width/2,(display_height*7)/8,100,50, green, light_green, "start",click)
+		click,debug = button("Debug", (display_width*3)/4,(display_height*7)/8,100,50, green, light_green, "True",click,debug)
 
 
 		if click=="start":
@@ -275,15 +284,15 @@ def Play():
 			genRandHand(plShow,250)
 
  
+		if debug:
+			outputImage = pygame.image.load("output.png")
+			inputImage = pygame.image.load("input.png")
+			
+			inputImage = pygame.transform.scale(inputImage, (imageWidth,imageHeight))
+			outputImage = pygame.transform.scale(outputImage, (imageWidth,imageHeight))
 
-		outputImage = pygame.image.load("output.png")
-		inputImage = pygame.image.load("input.png")
-		
-		inputImage = pygame.transform.scale(inputImage, (imageWidth,imageHeight))
-		outputImage = pygame.transform.scale(outputImage, (imageWidth,imageHeight))
-
-		gameDisplay.blit(inputImage,(0,0))
-		gameDisplay.blit(outputImage,(display_width-imageWidth,0))
+			gameDisplay.blit(inputImage,(0,0))
+			gameDisplay.blit(outputImage,(display_width-imageWidth,0))
 
 		message_to_screen("Score: %d"%(score),black,200,size="medium")
 
@@ -295,7 +304,8 @@ def Play():
 def Instructions():
 
 	click = "True"
-	
+	called = []
+
 	while click == "True":
 
 		#To avoid registration of multiple clicks
@@ -314,10 +324,10 @@ def Instructions():
 
 		gameDisplay.blit(whitebg,(0,0))
 
-		message_to_screen("The winner is decided by the show of hands.",black,-160,size="medium")
-		message_to_screen("Rock beats scissors",black,80,size="large")
-		message_to_screen("Scissor cut paper",black,0,size="large")
-		message_to_screen("Paper subdue rock",black,-80,size="large")
+		message_to_screen("The winner is decided by the show of hands.",black,-160,size="medium",called=called)
+		message_to_screen("Rock beats scissors",black,80,size="large",called=called)
+		message_to_screen("Scissor cut paper",black,0,size="large",called=called)
+		message_to_screen("Paper subdue rock",black,-80,size="large",called=called)
 
 		click = button("Main",display_width*0.2,display_height*0.75,100,50,yellow,light_yellow,"game_intro",click)
 		click = button("Quit",display_width*0.7,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
@@ -351,6 +361,14 @@ def Credits():
 		
 		click = button("Main Menu",display_width*0.2,display_height*0.75,100,50,yellow,light_yellow,"game_intro",click)
 		click = button("Quit",display_width*0.7,display_height*0.75,100,50,yellow,light_yellow,"quit",click)
+
+
+		# print "Rock..."
+		# pool.apply_async(callRPS, ("Rock",)) #multiprocessing works wonders
+		# print "Paper..."
+		# pool.apply_async(callRPS, ("Paper",)) #multiprocessing works wonders
+		# print "Scissors."
+		# pool.apply_async(callRPS, ("Scissor",)) #multiprocessing works wonders
 
 		pygame.display.update()
 		clock.tick(60)

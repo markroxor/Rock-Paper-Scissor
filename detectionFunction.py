@@ -7,6 +7,7 @@ clk = pygame.time.Clock()
 def fingerCount(cap,openSecs):
 
     ret,img = cap.read()
+    # img = imread("input.png")
 
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray,(5,5),0)
